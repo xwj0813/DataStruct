@@ -1,0 +1,253 @@
+# coding:utf-8
+
+'''
+利用数组构建栈
+栈的特点：先进后出，可以利用list来实现
+'''
+
+class Stack(object):
+    def __init__(self):
+        self.stack=[]#空列表
+    #进栈
+    def push(self,value):
+        self.stack.append(value)
+    #出栈
+    def pop(self):
+        if len(self.stack):
+           return  self.stack.pop() #移除列表一个元素默认最后一个元素，并返回该元素的值
+        else:
+            raise LookupError('stack is empty')
+    #判断是否为空
+    def is_empty(self):
+        return self.stack==[]
+    def top(self):
+        #栈顶
+        return self.stack[-1]
+    def size(self):
+        return len(self.stack)
+#链表实现一个栈
+class Node():
+    def __init__(self,data):
+        self.data=data
+        self.next=None
+#构建一个链式表
+class nodeStack(object):
+    #初始化
+    def __init__(self):
+        self.node=Node(None)
+        self.head=self.node
+        self.size=0
+    # 判断是否为空
+    def is_empty(self):
+        return self.size==0
+    # 获取栈的长度
+    def get_size(self):
+        return self.size
+    #进栈
+    def push(self,data):
+        #实现先进后出功能
+        node=Node(data)
+        node.next=self.head.next
+        self.head.next=node
+        self.size+=1
+    #出栈
+    def pop(self):
+        # 判断是否为空
+        if not self.is_empty():
+            current_node=self.head.next
+            if self.get_size()==1:
+                self.head.next=None
+            else:
+                self.head.next=self.head.next.next
+            self.size-=1
+            return current_node.data
+        else:
+            raise IndexError("this is empty stack")
+    def top(self):
+        if not self.is_empty():
+            return self.head.next.data
+        else:
+            return IndexError("stack is empty")
+
+#模拟浏览器的前进，后退，其实可以用两个栈实现，把首页push栈A，当点击后退时，依次从A中出来，并出栈的数据放入到b中，
+#当前进时，B取出数据，放入A中。当A为空时，没有可后退的了。B没数据时，没有可前进的
+
+def back( stackA,stackB):
+    #实现后退功能
+    if stackA.is_empty():
+        print("不能后退了")
+    else:
+        data=stackA.pop()
+        stackB.push(data)
+def go(stackA,stackB):
+    #实现前进功能
+    if stackB.is_empty():
+        print("不能前进了")
+    else:
+        data=stackB.pop()
+        stackA.push(data)
+
+
+
+
+
+
+if __name__=='__main__':
+    #初始化一个战队想
+    mystack=Stack()
+    mystack.push("dd")
+    mystack.push("jj")
+    print("栈的size为：",mystack.size())
+    # 出栈元素
+    print("出栈：", mystack.pop())
+    #取栈顶元素
+    print("栈顶元素：",mystack.top())
+
+   #测试链式栈
+    mystack_1=nodeStack()
+    #插入数据
+    mystack_1.push("123")
+    mystack_1.push("456")
+    print("栈的size为",mystack_1.get_size())
+    print("出栈元素：",mystack_1.pop())
+    print("栈顶元素：",mystack_1.top())
+
+    #模拟浏览器
+
+    stackA=Stack()#初始化两个栈
+    stackB= Stack()
+    stackA.push("A")
+    stackA.push("B")
+    #初始化页面，A，B,
+    print("现在页面：", stackA.top())
+    # 后退功能
+    back(stackA,stackB)
+    print("现在页面：",stackA.top())
+
+    #此时前进
+    go(stackA,stackB)
+    print("现在页面：", stackA.top())
+
+#####################################################################################################################
+
+# 数组实现队列
+class Queue(object):
+    def __init__(self):
+        self.items = []
+    def isEmpty(self):
+        return self.items == []
+    def enqueue(self, item):
+        self.items.insert(0,item)
+    def dequeue(self):
+        return self.items.pop()
+    def size(self):
+        return len(self.items)
+
+#利用链表实现列表
+#链表节点
+class Node():
+    def __init__(self,data):
+        self.item=data
+        self.next=None
+
+class QueueLink(object):
+    def __init__(self):
+        self.first=None
+        self.last=None
+
+        self.N=0
+
+    #判断是否为空
+    def isEmpty(self):
+        return self.first is None
+    #大小
+    def size(self):
+        return  self.N
+    #插入队列
+    def enqueue(self,item):
+        node=Node(item)
+        if self.isEmpty():
+            self.first=node
+        else:
+            self.last.next=node
+        self.N+=1
+    #删除队列
+    def dequeue(self):
+        if self.first is None:
+            raise  Exception("队列为空")
+        elif self.first is self.last:
+            self.last=None
+        else:
+            item=self.first.item #数据
+            self.first=self.first.next
+            self.N-=1
+            return item
+
+
+
+
+
+
+if __name__=="__main__":
+    queue= Queue()
+    queue.enqueue("ff")
+    print("现在队列的大小：",queue.size())
+    queue.enqueue("gg")
+    #删除
+    print("删除元素为：",queue.dequeue())
+
+    # 测试 链表组成队列
+    myqueue=QueueLink()
+    # 插入队列
+    myqueue.enqueue("jj")
+    print("现在队列的size：",myqueue.size())
+    print("现在的元素",myqueue.dequeue())
+    print("现在队列的size：", myqueue.size())
+##########################################################################################################################
+# 递归实现
+"""递归条件：
+1.要有终止条件
+2.子问题的规模在减少
+3.子问题可通过再次递归是西安
+"""
+#斐波那契数列
+def Fibonacci(n):
+    assert n>=0,"n>=0"
+    if n<=1:
+        return n
+    return Fibonacci(n-1)+Fibonacci(n-2)
+
+# 实现n！的阶层
+def factorial(n):
+    if n==0:
+        return 1
+    else:
+        return  n*factorial(n-1)
+#实现数据的全排列
+def sortlists(nums ,begin,end):
+    if len(nums)==1:
+        return nums
+
+    if(begin>=end):
+        print(nums)
+    else:
+        i=begin
+        for num in range(begin,end):
+            nums[num],nums[i]=nums[i],nums[num]
+            sortlists(nums,begin+1,end)
+            nums[num], nums[i] = nums[i], nums[num]
+
+if __name__=="__main__":
+    print("斐波那契数列wei:",Fibonacci(5))
+    print("n!阶层：",factorial(5))
+    ls=[1,2,3]
+    sortlists(ls,0,len(ls))
+
+    附上：lectcode的代码：
+    https://leetcode-cn.com/problems/climbing-stairs/
+    https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/
+    https://leetcode-cn.com/submissions/detail/4329895/
+    https://leetcode-cn.com/problems/sliding-window-maximum/
+   
+   
+    
