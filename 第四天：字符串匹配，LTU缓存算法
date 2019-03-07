@@ -1,0 +1,178 @@
+
+def kmp_match(s, p):
+    m = len(s)
+    n = len(p)
+    cur = 0  # 起始指针cur
+    table = partial_table(p)  # 部分匹配表
+    while cur <= m - n:  # 只去匹配前m-n个
+        for i in range(n):
+            if s[i + cur] != p[i]:
+                cur += max(i - table[i - 1], 1)  # 有了部分匹配表,我们不只是单纯的1位1位往右移,可以一次移动多位
+                break
+        else:  # for 循环中，如果没有从任何一个 break 中退出，则会执行和 for 对应的 else
+                        # 只要从 break 中退出了，则 else 部分不执行。
+            return True
+    return False
+
+
+# 部分匹配表
+def partial_table(p):
+    '''''前后缀共有元素的个数，partial_table("ABCDABD") -> [0, 0, 0, 0, 1, 2, 0]'''
+    prefix = set()
+    postfix = set()
+    ret = [0]
+    for i in range(1, len(p)):
+        prefix.add(p[:i])
+        postfix = {p[j:i + 1] for j in range(1, i + 1)}
+        ret.append(len((prefix & postfix or {''}).pop()))
+    return ret
+
+# 朴素匹配方法
+
+
+def naive_match(s, p):
+    m = len(s)
+    n = len(p)
+    for i in range(m - n + 1):
+        if s[i:n + i] == p:
+            return True
+
+    return False
+
+
+# Trie树的实现
+class Trie(object):
+    # word_end = -1
+    def __init__(self):
+        """
+        Initialize your data structure here.
+        """
+        self.root = {}
+        self.word_end = -1
+
+    def insert(self, word):
+        """
+        Inserts a word into the trie.
+        :type word: str
+        :rtype: void
+        """
+        curNode = self.root
+        for c in word:
+            if not c in curNode:
+                curNode[c] = {}
+            curNode = curNode[c]
+
+        curNode[self.word_end] = True
+
+    def search(self, word):
+        """
+        Returns if the word is in the trie.
+        :type word: str
+        :rtype: bool
+        """
+        curNode = self.root
+        for c in word:
+            if not c in curNode:
+                return False
+            curNode = curNode[c]
+
+        # Doesn't end here
+        if self.word_end not in curNode:
+            return False
+
+        return True
+
+    def startsWith(self, prefix):
+        """
+        Returns if there is any word in the trie that starts with the given prefix.
+        :type prefix: str
+        :rtype: bool
+        """
+        curNode = self.root
+        for c in prefix:
+            if not c in curNode:
+                return False
+            curNode = curNode[c]
+
+        return True
+
+
+if __name__ == "__main__":
+    s = "BBDD  HEEKE"
+    print("朴素字符串匹配：", naive_match(s, "BBBDD"))
+    print("部分匹配表：", partial_table("BBBDD"))
+    print("kmp_match：", kmp_match(s, "BBBDD"))
+    # trie树测试
+    objTrie = Trie()
+    objTrie.insert("hello world!")
+    print("ff", objTrie.search("hello world!"))
+#朴素字符串匹配： False
+#部分匹配表： [0, 1, 1, 0, 0]
+#kmp_match： False
+#ff True
+
+
+################################################################################################################################
+# -*- coding:utf-8 -*-
+"""
+LRU（Least recently used，最近最少使用）
+缓存算法根据数据最近被访问的情况来进行淘汰数据，其核心思想是“如果数据最近被访问过，
+那么将来被访问的几率也更高”
+"""
+from collections import OrderedDict
+
+
+class LRUCache(object):
+    def __init__(self, capacity=6):
+        self.capacity = capacity
+        # 使用OrderedDict，key是有序的，OrderedDict的Key会按照插入的顺序排列，不是Key本身排序
+        # OrderedDict可以实现一个FIFO（先进先出）的dict，当容量超出限制时，先删除最早添加的Key：
+        self.queue = OrderedDict()
+
+    def get(self, key):
+        if key not in self.queue:
+            return -1  # 想找的数据不再缓存中
+        value = self.queue.pop(key)  # 将选中的value移除字典
+        self.queue[key] = value  # 重新加载表头
+        return value
+
+    def put(self, key, value):
+        if key in self.queue:  # 已经在缓存中了
+            self.queue.pop(key)
+        # 达到最大容量
+        else:
+            if len(self.queue.items()) == self.capacity:
+                self.queue.popitem(last=False)
+                self.queue[key] = value
+            else:
+                self.queue[key] = value
+
+
+if __name__ == "__main__":
+    test = LRUCache()
+#     test.put(1, "a")
+#     print(test.queue, test.queue.keys())
+    for i in range(5, 10):
+        test.put(i, i * 2)
+
+    print(test.queue, test.queue.keys())
+    test.get(5)
+    test.get(8)
+    print(test.queue, test.queue.keys())
+    test.put(96, 100)
+    print(test.queue, test.queue.keys())
+    test.put(44, 55)
+    print(test.queue, test.queue.keys())  # 满时，删除最后一个
+
+
+#OrderedDict([(5, 10), (6, 12), (7, 14), (8, 16), (9, 18)]) odict_keys([5, 6, 7, 8, 9])
+#OrderedDict([(6, 12), (7, 14), (9, 18), (5, 10), (8, 16)]) odict_keys([6, 7, 9, 5, 8])
+#OrderedDict([(6, 12), (7, 14), (9, 18), (5, 10), (8, 16), (96, 100)]) odict_keys([6, 7, 9, 5, 8, 96])
+#OrderedDict([(7, 14), (9, 18), (5, 10), (8, 16), (96, 100), (44, 55)]) odict_keys([7, 9, 5, 8, 96, 44])
+
+
+
+##########################################################################################################
+LECTCODE
+第8题：https://leetcode-cn.com/submissions/detail/3721004/
+第151题：https://leetcode-cn.com/submissions/detail/14025775/
