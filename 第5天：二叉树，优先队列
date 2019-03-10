@@ -1,0 +1,228 @@
+# -*- coding:utf-8 -*-
+import json
+from heapq import *
+"""
+实现二叉树查找树
+
+"""
+
+#实现树(一行代码实现树)
+from collections import defaultdict
+
+def tree():
+    return defaultdict(tree)
+
+
+#实现二叉树
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.lchild = None
+        self.rchild = None
+
+class BST:
+    def __init__(self, node_list):
+        self.root = Node(node_list[0])
+        for data in node_list[1:]:
+            self.insert(data)
+
+    # 搜索
+    def search(self, node, parent, data):
+        if node is None:
+            return False, node, parent
+        if node.data == data:
+            return True, node, parent
+        if node.data > data:
+            return self.search(node.lchild, node, data)
+        else:
+            return self.search(node.rchild, node, data)
+
+    # 插入
+    def insert(self, data):
+        flag, n, p = self.search(self.root, self.root, data)
+        if not flag:
+            new_node = Node(data)
+            if data > p.data:
+                p.rchild = new_node
+            else:
+                p.lchild = new_node
+
+    # 删除
+    def delete(self, root, data):
+        flag, n, p = self.search(root, root, data)
+        if flag is False:
+            print("无该关键字，删除失败")
+        else:
+            if n.lchild is None:
+                if n == p.lchild:
+                    p.lchild = n.rchild
+                else:
+                    p.rchild = n.rchild
+                del p
+            elif n.rchild is None:
+                if n == p.lchild:
+                    p.lchild = n.lchild
+                else:
+                    p.rchild = n.lchild
+                del p
+            else:  # 左右子树均不为空
+                pre = n.rchild
+                if pre.lchild is None:
+                    n.data = pre.data
+                    n.rchild = pre.rchild
+                    del pre
+                else:
+                    next = pre.lchild
+                    while next.lchild is not None:
+                        pre = next
+                        next = next.lchild
+                    n.data = next.data
+                    pre.lchild = next.rchild
+                    del p
+
+
+    # 先序遍历
+    def preOrderTraverse(self, node):
+        if node is not None:
+            print(node.data)
+            self.preOrderTraverse(node.lchild)
+            self.preOrderTraverse(node.rchild)
+
+    # 中序遍历
+    def inOrderTraverse(self, node):
+        if node is not None:
+            self.inOrderTraverse(node.lchild)
+            print(node.data)
+            self.inOrderTraverse(node.rchild)
+
+    # 后序遍历
+    def postOrderTraverse(self, node):
+        if node is not None:
+            self.postOrderTraverse(node.lchild)
+            self.postOrderTraverse(node.rchild)
+            print(node.data)
+
+#堆的实现
+"""
+1、堆是一棵完全二叉树，这棵二叉树需要满足堆序：
+     任何分支结点（即除去叶结点所剩余的结点）的值都大于等于（或小于等于）其左右子结点的值。
+
+2、一般用列表来表示堆（Python中的列表下标从0开始），i结点的父结点位置为(i-1)//2(取整)，
+     i结点的左右子结点位置为2*i+1和2*i+2。
+
+3、如果堆序是小元素优先，则构造出来的称为‘小顶堆’（小元素在上）；如果堆序是大元素优先，则构造出来
+     的称为‘大顶堆’（大元素在上）。 以下的内容默认为小顶堆。
+
+"""
+#建立堆
+class Heap_Queue(object):
+    def __init__(self,elems=[]):
+        self._elems=list(elems)
+        if self._elems:
+            self.buildheap()
+    def is_empty(self):
+        return self._elems ==[]
+    #取栈顶元素
+    def peek(self):
+        if self.is_empty():
+            raise Exception("为空")
+        return self._elems[0]
+    #追加一个元素
+    """
+    向上筛选大体步骤为：将待插入元素首先插入到二叉树最下层最右边的新的叶结点位置，然后，比较插入元素与其父结点的大小，
+    如果插入元素值较小，则交换两个元素的位置，重复次操作，不断向上进行比较，直到某一父结点的元素值小于插入元素的值，
+    或者插入元素已经到达根结点为止
+    
+    """
+    def enqueue(self,e):
+        self._elems.append(e)
+        self.siftup(e,len(self._elems)-1)
+
+    def siftup(self,e,last):#将最小值放在上面
+        elems,i,j=self._elems,last,(last-1)//2
+        while i>0 and e<elems[j]:#插入的元素小与当前节点的值
+            elems[i]=elems[j]
+            i,j=j,(j-1)//2
+        elems[i]=e
+    def dequeue(self):
+        if self.is_empty():
+            raise Exception("为空")
+        elems=self._elems
+        e0=elems[0]#根元素
+        e=elems.pop()
+        if len(elems)>0:
+            self.siftdown(e,0,len(elems))
+        return e0
+
+    def siftdown(self, e, begin, end):  # 向下筛选
+        elems, i, j = self._elems, begin, begin * 2 + 1  # j为i的左子结点
+        while j < end:
+            if j + 1 < end and elems[j] > elems[j + 1]:  # 如果左子结点大于右子结点
+                j += 1  # 则将j指向右子结点，将j指向较小元素的位置
+            if e < elems[j]:  # j已经指向两个子结点中较小的位置，
+                break  # 如果插入元素e小于j位置的值，则为3者中最小的
+            elems[i] = elems[j]  # 能执行到这一步的话，说明j位置元素是三者中最小的，则将其上移到父结点位置
+            i, j = j, j * 2 + 1  # 更新i为被上移为父结点的原来的j的位置，更新j为更新后i位置的左子结点
+
+        elems[i] = e  # 如果e已经是某个子树3者中最小的元素，则将其赋给这个子树的父结点
+        # 或者位置i已经更新到叶结点位置，则将e赋给这个叶结点。
+
+    def buildheap(self):
+        end = len(self._elems)
+        for i in range(end // 2 - 1, -1, -1):  # 初始位置设置为end//2 - 1。 如果end=len(elems)-1,则初始位置为(end+1)//2-1.
+            #            print(self._elems[i])
+            self.siftdown(self._elems[i], i, end)
+
+#heapq模块的介绍
+class Heap_Pri_Queue(object):
+    def __init__(self, heap=[]):
+        self.heap = heap
+        heapify(self.heap)
+
+    def enqueue(self, val):
+        heappush(self.heap, val)
+
+    def dequeue(self):
+        return heappop(self.heap)
+
+
+
+if __name__=="__main__":
+    # 不需要创建节点
+    user=tree()
+    user['codingpy']['username']='earlgrey'
+    user['python']['username']='Guido van Rossum'
+    print(json.dumps(user))
+    print("*******************************************************")
+    a = [49, 38, 65, 97, 60, 76, 13, 27, 5, 1]
+    t = BST(a)  # 创建二叉查找树
+
+    # t.width_circle()
+    print("\n前序遍历")
+    t.preOrderTraverse(t.root)
+    print("\n中序遍历")
+    t.inOrderTraverse(t.root)
+
+    t.delete(t.root,49)
+    print("\n后序遍历：")
+    t.postOrderTraverse(t.root)
+    print("*******************************************************")
+    temp = Heap_Queue([5, 6, 8, 1, 2, 4, 9])
+    print(temp._elems)
+    temp.dequeue()
+    print(temp._elems)
+    temp.enqueue(0)
+    print(temp._elems)
+    print(temp.peek())
+    print("*******************************************************")
+    lst = [5, 6, 8, 1]
+    heap = Heap_Pri_Queue(lst)
+    print(heap.dequeue())  # 1
+    heap.enqueue(3)
+    print(heap.heap)#[3, 5, 8, 6]
+    
+    lectcode：
+    112题：https://leetcode-cn.com/problems/path-sum/submissions/
+    98题：https://leetcode-cn.com/problems/validate-binary-search-tree/comments/
+    226题：https://leetcode-cn.com/problems/invert-binary-tree/
+    104题：https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/
