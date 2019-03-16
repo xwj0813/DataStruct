@@ -1,0 +1,118 @@
+# -*- coding:utf-8 -*-
+"""
+8皇后问题:
+将八位皇后放在一张8x8的棋盘上，使得每位皇后都无法吃掉别的皇后，
+（即任意两个皇后都不在同一条横线，竖线和斜线上），问一共有多少种摆法
+"""
+import random
+def checkQueue(old_queue,new_queue):
+    num=len(old_queue) #行
+    for index,queue in enumerate(old_queue):
+        if queue==new_queue:#判断列号是否相等
+            return False
+        #判断斜线方向是否相等
+        if abs(new_queue-queue)==num-index:
+            return False
+        return True
+
+def arrage_queue(num,old_queue=()):
+    for new_queue in range(num):
+        if checkQueue(old_queue,new_queue):#判断是否可以放皇后
+            if len(old_queue)==num-1:#最后一行
+                yield (new_queue,)
+            else:
+                for result in arrage_queue(num,old_queue+(new_queue,)):
+                    yield (new_queue,)+result
+
+#0-1 背包问题
+bestV=0
+curW=0
+curV=0
+bestx=None
+
+def backtrack(i):
+	global bestV,curW,curV,x,bestx
+	if i>=n:
+		if bestV<curV:
+			bestV=curV
+			bestx=x[:]
+	else:
+		if curW+w[i]<=c:
+			x[i]=True
+			curW+=w[i]
+			curV+=v[i]
+			backtrack(i+1)
+			curW-=w[i]
+			curV-=v[i]
+		x[i]=False
+		backtrack(i+1)
+#利用分治算法求一组数据的逆序对个数
+def InversionNum(lst):
+    # 改写归并排序,在归并排序中，每当R部分元素先于L部分元素插入原列表时，逆序对数要加L剩余元素数
+    if len(lst) == 1:
+        return lst, 0
+    else:
+        n = len(lst) // 2
+        lst1, count1 = InversionNum(lst[0:n])
+        lst2, count2 = InversionNum(lst[n:len(lst)])
+        lst, count = Count(lst1, lst2, 0)
+        return lst, count1 + count2 + count
+
+
+def Count(lst1, lst2, count):
+    i = 0
+    j = 0
+    res = []
+    while i < len(lst1) and j < len(lst2):
+        if lst1[i] <= lst2[j]:
+            res.append(lst1[i])
+            i += 1
+        else:
+            res.append(lst2[j])
+            count += len(lst1) - i  # 当右半部分的元素先于左半部分元素进入有序列表时，逆序对数量增加左半部分剩余的元素数
+            j += 1
+    res += lst1[i:]
+    res += lst2[j:]
+    return res, count
+
+#编程实现莱文斯坦最短编辑距离
+def normal_leven(str1, str2):
+    len_str1 = len(str1) + 1
+    len_str2 = len(str2) + 1
+    # create matrix
+    matrix = [0 for n in range(len_str1 * len_str2)]
+    # init x axis
+    for i in range(len_str1):
+        matrix[i] = i
+    # init y axis
+    for j in range(0, len(matrix), len_str1):
+        if j % len_str1 == 0:
+            matrix[j] = j // len_str1
+
+    for i in range(1, len_str1):
+        for j in range(1, len_str2):
+            if str1[i - 1] == str2[j - 1]:
+                cost = 0
+            else:
+                cost = 1
+            matrix[j * len_str1 + i] = min(matrix[(j - 1) * len_str1 + i] + 1,
+                                           matrix[j * len_str1 + (i - 1)] + 1,
+                                           matrix[(j - 1) * len_str1 + (i - 1)] + cost)
+
+    return matrix[-1]
+
+if __name__=="__main__":
+    print("dd")
+    # for i in arrage_queue(8):
+    #     print(i)
+    #prettyp(arrage_queue(8,[]))
+    n = 5
+    c = 10
+    w = [2, 2, 6, 5, 4]
+    v = [6, 3, 5, 4, 6]
+    x = [False for i in range(n)]
+    backtrack(0)
+    print(bestV)
+    print(bestx)
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    print(InversionNum([11,67, 98, 7,44, 5, 4, 3, 2, 1]))
